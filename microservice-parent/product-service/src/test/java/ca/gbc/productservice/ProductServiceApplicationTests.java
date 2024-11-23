@@ -7,70 +7,44 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.utility.DockerImageName;
-//Tells Springs Boot to look for a main configuration class (@SpringBootApplication)
+
+// Tells Springs boot to look for a main configuration class (@SpringBootApplication)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductServiceApplicationTests {
 
-    //This annotation is used in combination with TestContainers to autamitally configure the connection to
-    //the Test MongoDBContainer
+    //This annotation is used in combination with TestContainers to automatically configure to
+    // the Test MongoDBContainer
     @ServiceConnection
-    static MongoDBContainer mongoDbContainer = new MongoDBContainer("mongo:latest");
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4.6");
+
+    @LocalServerPort
+    private Integer port;
 
 
-   @LocalServerPort
-   private Integer port;
+    @BeforeEach
+    void setup(){
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = port;
+    }
 
-   @BeforeEach
-   void setUp() {
-       RestAssured.baseURI = "http://localhost";
-       RestAssured.port = port;
-
-   }
-   static{
-       mongoDbContainer.start();
-   }
-
-    @Test
-    void createProduct() {
-        String requestBody = """
-          {
-            "name" : "Samsung TV",
-            "description" : "Samsung TV - Model 2024",
-            "price" : "2000"
-          }
-   """;
-
-        // BDD - Behavioural Driven Development (Given, When, Then)
-        RestAssured.given()
-                .contentType("application/json")
-                .body(requestBody)
-                .when()
-                .post("/api/product")
-                .then()
-                .log().all()
-                .statusCode(201)
-                .body("id", Matchers.notNullValue())
-                .body("name", Matchers.equalTo("Samsung TV"))
-                .body("description", Matchers.equalTo("Samsung TV - Model 2024"))
-                .body("price", Matchers.equalTo("2000"));
+    static {
+        mongoDBContainer.start();
     }
 
 
     @Test
-    void getAllProducts() {
+    void createProductTest() {
 
         String requestBody = """
-              {
-                "name" : "Samsung TV"
-                "description" : Samsung TV - Model 2024",
-                "price" : "2000";
-              }
-        """;
+				{
+					"name" : "LG TV",
+					"description" : "LG TV Model 2024",
+					"price" : 2000
+				}
+			""";
 
-        //BDD -0 Behavioural Driven Development (Given, When,Then)
+        //BOD -0 Behavioural Driven Development (Given, When, Then)
         RestAssured.given()
                 .contentType("application/json")
                 .body(requestBody)
@@ -80,9 +54,37 @@ class ProductServiceApplicationTests {
                 .log().all()
                 .statusCode(201)
                 .body("id", Matchers.notNullValue())
-                .body("name", Matchers.equalTo("Samsung TV"))
-                .body("description", Matchers.equalTo("Samsung TV - Model 2024"))
-                .body("price", Matchers.equalTo("2000"));
+                .body("name", Matchers.equalTo("LG TV"))
+                .body("description", Matchers.equalTo("LG TV Model 2024") )
+                .body("price", Matchers.equalTo(2000) );
+
+    }
+
+    @Test
+    void getAllProductsTest() {
+
+        String requestBody = """
+				{
+					"name" : "LG TV",
+					"description" : "LG TV Model 2024",
+					"price" : "2000";
+				}
+			""";
+
+        //BOD -0 Behavioural Driven Development (Given, When, Then)
+        RestAssured.given()
+                .contentType("application/json")
+                .body(requestBody)
+                .when()
+                .post("/api/product")
+                .then()
+                .log().all()
+                .statusCode(201)
+                .body("id", Matchers.notNullValue())
+                .body("name", Matchers.equalTo("LG TV"))
+                .body("description", Matchers.equalTo("LG TV Model 2024") )
+                .body("price", Matchers.equalTo(2000) );
+
 
         RestAssured.given()
                 .contentType("application/json")
@@ -91,11 +93,13 @@ class ProductServiceApplicationTests {
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("size", Matchers.greaterThan(0))
-                .body("[0].name", Matchers.equalTo("Samsung TV"))
-                .body("[0]description", Matchers.equalTo("Samsung TV - Model 2024"))
-                .body("[0]price", Matchers.equalTo("2000"));
+                .body("size()", Matchers.greaterThan(0))
+                .body("[0].name", Matchers.equalTo("LG TV"))
+                .body("[0].description", Matchers.equalTo("LG TV Model 2024") )
+                .body("[0].price", Matchers.equalTo(2000) );
+
 
 
     }
+
 }
