@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+
+  postgres-inventory:
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    container_name: local-postgresdb-inventory
+    environment:
+      - POSTGRES_USER:admin
+      - POSTGRES_PASSWORD:password
+      - PGDATA:/data/postgres
+    volumes:
+      - ./data/inventory:/var/lib/postgresql/data
+      - ./init/inventory/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+
+#  postgres:
+#    image: postgres
+#    ports:
+#      - "5433:5432"
+#    container_name: postgres-single
+#    environment:
+#      - POSTGRES_USER=admin
+#      - POSTGRES_PASSWORD=password
+#    volumes:
+#      - ./data/order:/var/lib/postgresql/data
+#       - ./init/postgres/order/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    ports:
+      - "8889:80"
+    container_name: pgadmingui-local-multiple
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
+      - PGADMIN_DEFAULT_PASSWORD=password
